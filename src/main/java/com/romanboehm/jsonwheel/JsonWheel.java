@@ -62,8 +62,27 @@ class JsonWheel {
                     List<Object> list = new ArrayList<>();
                     readArrayValue(list, 0);
                     return list;
+                // Per newer RFCs top level non-object, non-array values are allowed.
+                case '"':
+                    int closingQuote = next('"', next + 1);
+                    return buildString(next + 1, closingQuote - 1);
+                case 'n':
+                    readChars(NULL_LITERAL, next);
+                    return null;
+                case 't':
+                    readChars(TRUE_LITERAL, next);
+                    return true;
+                case 'f':
+                    readChars(FALSE_LITERAL, next);
+                    return false;
                 default:
-                    throw new JsonWheelException("Invalid json at " + next);
+                    int numberEnd = readNumber(next);
+                    String number = buildString(next, numberEnd);
+                    if (number.contains(".")) {
+                        return Double.parseDouble(number);
+                    } else {
+                        return Integer.parseInt(number); // Change to `Long::parseLong` if needed.
+                    }
             }
         }
 

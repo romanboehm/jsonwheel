@@ -6,13 +6,81 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JsonWheelTest {
 
     @Test
-    void nullScalar() {
+    void nullTopLevel() {
+        var json = """
+                null
+                """;
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isNull();
+    }
+
+    @Test
+    void stringTopLevel() {
+        var json = """
+                "foo"
+                """;
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isEqualTo("foo");
+    }
+
+    @Test
+    void trueTopLevel() {
+        var json = """
+                true
+                """;
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isEqualTo(TRUE);
+    }
+
+    @Test
+    void falseTopLevel() {
+        var json = """
+                false
+                """;
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isEqualTo(FALSE);
+    }
+
+    @Test
+    void integerTopLevel() {
+        var json = """
+                1
+                """;
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isEqualTo(1);
+    }
+
+    @Test
+    void decimalTopLevel() {
+        var json = """
+                1.0
+                """;
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isEqualTo(1.0d);
+    }
+
+    @Test
+    void nullValue() {
         var json = """
                 {
                     "k": null
@@ -28,7 +96,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void intScalar() {
+    void intValue() {
         var json = """
                 {
                     "k": 1
@@ -42,7 +110,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void negativeIntScalar() {
+    void negativeIntValue() {
         var json = """
                 {
                     "k": -1
@@ -56,7 +124,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void doubleScalar() {
+    void DecimalValue() {
         var json = """
                 {
                     "k": 1.1
@@ -70,7 +138,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void negativeDoubleScalar() {
+    void negativeDecimalValue() {
         var json = """
                 {
                     "k": -1.1
@@ -84,7 +152,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void numberWithExponentScalar() {
+    void decimalWithExponentValue() {
         var json = """
                 {
                     "k": 1.0e+3
@@ -98,7 +166,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void falseScalar() {
+    void falseValue() {
         var json = """
                 {
                     "k": false
@@ -112,7 +180,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void trueScalar() {
+    void trueValue() {
         var json = """
                 {
                     "k": true
@@ -126,7 +194,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void stringScalar() {
+    void stringValue() {
         var json = """
                 {
                     "k": "1"
@@ -140,7 +208,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void emptyStringScalar() {
+    void emptyStringValue() {
         var json = """
                 {
                     "k": ""
@@ -154,7 +222,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void stringScalarQuotes() {
+    void stringValueQuotes() {
         var json = """
                 {
                     "k": "va\\"lue\\""
@@ -168,7 +236,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void stringScalarColon() {
+    void stringValueColon() {
         var json = """
                 {
                     "k": "va:lue"
@@ -182,7 +250,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void stringScalarComma() {
+    void stringValueComma() {
         var json = """
                 {
                     "k": "va,lue"
@@ -196,7 +264,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void stringScalarOpeningBrace() {
+    void stringValueOpeningBrace() {
         var json = """
                 {
                     "k": "bra{ce"
@@ -210,7 +278,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void stringScalarClosingBrace() {
+    void stringValueClosingBrace() {
         var json = """
                 {
                     "k": "bra}ce"
@@ -224,7 +292,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void stringScalarOpeningBracket() {
+    void stringValueOpeningBracket() {
         var json = """
                 {
                     "k": "bra[cket"
@@ -238,7 +306,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void stringScalarClosingBracket() {
+    void stringValueClosingBracket() {
         var json = """
                 {
                     "k": "bra]cket"
@@ -252,7 +320,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void multipleScalars() {
+    void multipleValues() {
         var json = """
                 {
                     "k1": "1",
@@ -670,5 +738,14 @@ class JsonWheelTest {
 
         var node = JsonWheel.read(json);
         assertThat(node.get("foo").val(String.class)).isNull();
+    }
+
+    @Test
+    void accessTopLevel() {
+        var json = """
+                true""";
+
+        var node = JsonWheel.read(json);
+        assertThat(node.val(Boolean.class)).isTrue();
     }
 }
