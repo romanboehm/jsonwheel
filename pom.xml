@@ -6,13 +6,13 @@
 
     <groupId>com.romanboehm</groupId>
     <artifactId>jsonwheel</artifactId>
-    <version>0.3</version>
+    <version>0.4</version>
     <name>jsonwheel</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven-compiler-plugin.version>3.9.0</maven-compiler-plugin.version>
-        <maven-compiler-plugin.actual.release>11</maven-compiler-plugin.actual.release>
+        <maven-compiler-plugin.actual.release>8</maven-compiler-plugin.actual.release>
         <maven-compiler-plugin.testRelease>17</maven-compiler-plugin.testRelease>
         <maven-compiler-plugin.intellij.release>17</maven-compiler-plugin.intellij.release>
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>

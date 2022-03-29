@@ -1,12 +1,13 @@
 package com.romanboehm.jsonwheel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Copyright (c) 2022 Roman Böhm. Subject to the Apache License 2.0.
@@ -28,7 +29,11 @@ class JsonWheel {
         }
 
         List<WheelNode> elements() {
-            return ((List<Object>) inner).stream().map(WheelNode::new).collect(Collectors.toList());
+            List<WheelNode> list = new ArrayList<>();
+            for (Object o : ((List<Object>) inner)) {
+                list.add(new WheelNode(o));
+            }
+            return list;
         }
 
         WheelNode get(String key) {
@@ -44,7 +49,7 @@ class JsonWheel {
         private static final char[] TRUE_LITERAL = new char[]{'t', 'r', 'u', 'e'};
         private static final char[] FALSE_LITERAL = new char[]{'f', 'a', 'l', 's', 'e'};
         private static final char[] NULL_LITERAL = new char[]{'n', 'u', 'l', 'l'};
-        private static final Set<Character> NUMBER_CHARS = Set.of('+', '.', '-');
+        private static final Set<Character> NUMBER_CHARS = new HashSet<>(Arrays.asList('+', '.', '-'));
         private final char[] chars;
 
         Deserializer(char[] chars) {
