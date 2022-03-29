@@ -6,7 +6,7 @@
 
     <groupId>com.romanboehm</groupId>
     <artifactId>jsonwheel</artifactId>
-    <version>0.2</version>
+    <version>0.3</version>
     <name>jsonwheel</name>
 
     <properties>
