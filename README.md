@@ -27,9 +27,9 @@ If the answer is "no" I still had fun writing it. :)
 
 Either
 
-a) copy the **content** of [JsonWheel.java](https://github.com/rmnbhm/jsonwheel/blob/main/JsonWheel.java) as-is into your existing class (remove imports if colliding with your pre-existing ones), or
+a) copy the **content** of [JsonWheel.java](https://github.com/rmnbhm/jsonwheel/blob/0.2/JsonWheel.java) as-is into your existing class (remove imports if colliding with your pre-existing ones), or
 
-b) copy the whole [JsonWheel.java](https://github.com/rmnbhm/jsonwheel/blob/main/JsonWheel.java) over into your app (adjust the package declaration if needed).
+b) copy the whole [JsonWheel.java](https://github.com/rmnbhm/jsonwheel/blob/0.2/JsonWheel.java) over into your app (adjust the package declaration if needed).
 
 Then you can ...
 
@@ -44,9 +44,9 @@ var json = """
     }""";
 
 var node = JsonWheel.read(json);
-var a = node.get("foo").val(Integer.class); // 1
-var b = node.get("bar").val(String.class);  // "baz"
-var b = node.get("qux").val(String.class);  // null
+var foo = node.get("foo").val(Integer.class); // 1
+var bar = node.get("bar").val(String.class);  // "baz"
+var qux = node.get("qux").val(String.class);  // null
 ```
 ### 2) Deserialize JSON arrays
 
