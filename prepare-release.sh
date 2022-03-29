@@ -16,4 +16,9 @@ cp --force src/main/java/com/romanboehm/jsonwheel/JsonWheel.java JsonWheel.java
 echo "Removing package declaration from source file ..."
 sed --in-place=.bak '1,2d' JsonWheel.java && rm JsonWheel.java.bak
 
+echo "Substituting version in hyperlink to source file ..."
+export VERSION \
+  && rm --force README.md \
+  && envsubst < README.md.template > README.md \
+
 exit 0
