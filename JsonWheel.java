@@ -20,22 +20,23 @@ class JsonWheel {
     }
 
     static class WheelNode {
-        final Object inner;
+        Object inner;
 
-        WheelNode(Object inner) {
+        WheelNode setInner(Object inner) {
             this.inner = inner;
+            return this;
         }
 
         List<WheelNode> elements() {
             List<WheelNode> list = new ArrayList<>();
             for (Object o : ((List<Object>) inner)) {
-                list.add(new WheelNode(o));
+                list.add(new WheelNode().setInner(o));
             }
             return list;
         }
 
         WheelNode get(String key) {
-            return new WheelNode(((Map<String, Object>) inner).get(key));
+            return new WheelNode().setInner(((Map<String, Object>) inner).get(key));
         }
 
         <T> T val(Class<T> clazz) {
@@ -54,39 +55,10 @@ class JsonWheel {
             this.chars = chars;
         }
 
-        Object readInternal() {
-            int next = next(0);
-            switch (chars[next]) {
-                case '{':
-                    Map<String, Object> map = new HashMap<>();
-                    readObjectValue(map, 0);
-                    return map;
-                case '[':
-                    List<Object> list = new ArrayList<>();
-                    readArrayValue(list, 0);
-                    return list;
-                // Per newer RFCs top level non-object, non-array values are allowed.
-                case '"':
-                    int closingQuote = next('"', next + 1);
-                    return buildString(next + 1, closingQuote - 1);
-                case 'n':
-                    readChars(NULL_LITERAL, next);
-                    return null;
-                case 't':
-                    readChars(TRUE_LITERAL, next);
-                    return true;
-                case 'f':
-                    readChars(FALSE_LITERAL, next);
-                    return false;
-                default:
-                    int numberEnd = readNumber(next);
-                    String number = buildString(next, numberEnd);
-                    if (number.contains(".")) {
-                        return Double.parseDouble(number);
-                    } else {
-                        return Integer.parseInt(number); // Change to `Long::parseLong` if needed.
-                    }
-            }
+        WheelNode readInternal() {
+            WheelNode wheelNode = new WheelNode();
+            readValue(o -> wheelNode.setInner(o), 0);
+            return wheelNode;
         }
 
         private int readValue(Consumer<Object> valueConsumer, int from) {
@@ -224,6 +196,6 @@ class JsonWheel {
 
     static WheelNode read(String json) {
         char[] chars = json.toCharArray();
-        return new WheelNode(new Deserializer(chars).readInternal());
+        return new Deserializer(chars).readInternal();
     }
 }
