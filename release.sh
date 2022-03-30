@@ -7,6 +7,12 @@ fi
 
 VERSION="$1"
 
+if [ "$(git diff HEAD --name-only | wc -l)" -gt 0 ]
+then
+  echo "Error: You have uncommitted changes!"
+  exit 1
+fi
+
 echo "Tagging commit ..."
 git tag "$VERSION"
 

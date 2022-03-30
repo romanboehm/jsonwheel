@@ -7,11 +7,20 @@ fi
 
 VERSION="$1"
 
+echo "Running tests ..."
+./mvnw test
+if [ "$?" -eq 1 ]
+then
+  echo "Error: Fix test failures."
+  exit 1
+fi
+
 echo "Setting \`project.version\` property ..."
-./mvnw versions:set -DnewVersion="$VERSION" && rm --force pom.xml.versionsBackup
+./mvnw versions:set -DnewVersion="$VERSION" \
+  && rm --force pom.xml.versionsBackup
 
 echo "Copying source file to project root and removing package declaration from source file ..."
-rm JsonWheel.java \
+rm --force JsonWheel.java \
   && tail src/main/java/com/romanboehm/jsonwheel/JsonWheel.java --lines=+3 > JsonWheel.java
 
 echo "Substituting version in hyperlink to source file ..."
