@@ -10,11 +10,9 @@ VERSION="$1"
 echo "Setting \`project.version\` property ..."
 ./mvnw versions:set -DnewVersion="$VERSION" && rm --force pom.xml.versionsBackup
 
-echo "Copying source file to project root ..."
-cp --force src/main/java/com/romanboehm/jsonwheel/JsonWheel.java JsonWheel.java
-
-echo "Removing package declaration from source file ..."
-sed --in-place=.bak '1,2d' JsonWheel.java && rm JsonWheel.java.bak
+echo "Copying source file to project root and removing package declaration from source file ..."
+rm JsonWheel.java \
+  && tail src/main/java/com/romanboehm/jsonwheel/JsonWheel.java --lines=+3 > JsonWheel.java
 
 echo "Substituting version in hyperlink to source file ..."
 export VERSION \

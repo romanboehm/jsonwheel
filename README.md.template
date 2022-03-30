@@ -13,12 +13,13 @@ If the answer is "no" I still had fun writing it. :)
 * small
 * deserialization-only
 * hackable
-* compatible to JDK 11+
+* compatible to JDK 8+
 * dependency-less
 * not tooo slow
 
 ## It is not ...
 
+* 100% spec-conforming
 * typed (except for its own API's types)
 * safe for malformed input
 * safe for malicious input (at least I don't give that guarantee)
