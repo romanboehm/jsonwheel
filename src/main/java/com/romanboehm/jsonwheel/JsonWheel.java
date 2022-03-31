@@ -52,6 +52,7 @@ class JsonWheel {
         private static final char[] NULL_LITERAL = new char[]{'n', 'u', 'l', 'l'};
         private static final Set<Character> NUMBER_CHARS = new HashSet<>(Arrays.asList('+', '.', '-'));
         private static final Map<Character, Character> ESCAPE_LOOKUP = new HashMap<>();
+
         static {
             ESCAPE_LOOKUP.put('n', '\n');
             ESCAPE_LOOKUP.put('t', '\t');
@@ -201,23 +202,30 @@ class JsonWheel {
             }
             StringBuilder builder = new StringBuilder();
             while (from <= to) {
-                if (chars[from] == '\\' && from++ <= to) {
-                    if (chars[from] == 'u') { // Codepoint in u-syntax.
-                        int cpStart = from + 1; // Skip "u".
-                        int cpEnd = cpStart + 3;
-                        if (cpEnd > to) {
-                            throw new JsonWheelException("Invalid codepoint at " + from);
-                        }
-                        builder.appendCodePoint(Integer.parseInt(buildString(cpStart, cpEnd), 16));
-                        from = cpEnd;
-                    } else if (chars[from] == 'b') { // Backspace.
-                        builder.deleteCharAt(builder.length() - 1);
-                    } else { // Use pre-defined lookup table.
-                        Character escapeLookup = ESCAPE_LOOKUP.get(chars[from]);
-                        if (escapeLookup == null) {
-                            throw new JsonWheelException("Invalid escape sequence at " + from + ": " + chars[from]);
-                        }
-                        builder.append(escapeLookup);
+                if (chars[from] == '\\' && from + 1 <= to) {
+                    from++; // Skip backslash. Then check:
+                    // a) Codepoint in u-syntax.
+                    switch (chars[from]) {
+                        case 'u':
+                            int cpStart = from + 1; // Skip "u".
+                            int cpEnd = cpStart + 3;
+                            if (cpEnd > to) {
+                                throw new JsonWheelException("Invalid codepoint at " + from);
+                            }
+                            builder.appendCodePoint(Integer.parseInt(buildString(cpStart, cpEnd), 16));
+                            from = cpEnd;
+                            break;
+                        // b) Backspace.
+                        case 'b':
+                            builder.deleteCharAt(Math.max(builder.length() - 1, 0));
+                            break;
+                        // c) Other escaped characters for which we can use the lookup table.
+                        default:
+                            Character escapeLookup = ESCAPE_LOOKUP.get(chars[from]);
+                            if (escapeLookup == null) {
+                                throw new JsonWheelException("Invalid escape sequence at " + from + ": " + chars[from]);
+                            }
+                            builder.append(escapeLookup);
                     }
                 } else {
                     builder.append(chars[from]);
