@@ -189,7 +189,19 @@ class ComparisonTest {
                             {"id": "Help"},
                             {"id": "About", "label": "About Adobe CVG Viewer..."}
                         ]
-                    }}"""
+                    }}""",
+            """
+                    {
+                        "k": "va\\"lue\\""
+                    }""",
+            """
+                    {
+                        "k": "Stra\u00dfe"
+                    }""",
+            """
+                    {
+                        "k": "\\u81ea\\u7531"
+                    }"""
     })
     void produceSameMap(String json) throws IOException {
         var wheel = JsonWheel.read(json).inner;

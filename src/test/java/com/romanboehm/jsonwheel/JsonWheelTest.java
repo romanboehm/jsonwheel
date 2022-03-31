@@ -1,7 +1,9 @@
 package com.romanboehm.jsonwheel;
 
+import com.fasterxml.jackson.jr.ob.JSON;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,7 +126,7 @@ class JsonWheelTest {
     }
 
     @Test
-    void DecimalValue() {
+    void decimalValue() {
         var json = """
                 {
                     "k": 1.1
@@ -225,13 +227,13 @@ class JsonWheelTest {
     void stringValueQuotes() {
         var json = """
                 {
-                    "k": "va\\"lue\\""
+                    "k": "quo\\"tes\\""
                 }""";
 
         var node = JsonWheel.read(json);
 
         assertThat(node.inner).isEqualTo(
-                Map.of("k", "va\\\"lue\\\"")
+                Map.of("k", "quo\"tes\"")
         );
     }
 
@@ -239,13 +241,13 @@ class JsonWheelTest {
     void stringValueColon() {
         var json = """
                 {
-                    "k": "va:lue"
+                    "k": "co:lon"
                 }""";
 
         var node = JsonWheel.read(json);
 
         assertThat(node.inner).isEqualTo(
-                Map.of("k", "va:lue")
+                Map.of("k", "co:lon")
         );
     }
 
@@ -253,13 +255,13 @@ class JsonWheelTest {
     void stringValueComma() {
         var json = """
                 {
-                    "k": "va,lue"
+                    "k": "com,ma"
                 }""";
 
         var node = JsonWheel.read(json);
 
         assertThat(node.inner).isEqualTo(
-                Map.of("k", "va,lue")
+                Map.of("k", "com,ma")
         );
     }
 
@@ -316,6 +318,132 @@ class JsonWheelTest {
 
         assertThat(node.inner).isEqualTo(
                 Map.of("k", "bra]cket")
+        );
+    }
+
+    @Test
+    void stringValueSolidus() {
+        var json = """
+                {
+                    "k": "soli\\/dus"
+                }""";
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isEqualTo(
+                Map.of("k", "soli/dus")
+        );
+    }
+
+    @Test
+    void stringValueReverseSolidus() {
+        var json = """
+                {
+                    "k": "reverse\\\\solidus"
+                }""";
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isEqualTo(
+                Map.of("k", "reverse\\solidus")
+        );
+    }
+
+    @Test
+    void stringValueHorizontalTab() {
+        var json = """
+                {
+                    "k": "horizontal\\ttab"
+                }""";
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isEqualTo(
+                Map.of("k", "horizontal\ttab")
+        );
+    }
+
+    @Test
+    void stringValueCarriageReturn() {
+        var json = """
+                {
+                    "k": "carriage\\rreturn"
+                }""";
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isEqualTo(
+                Map.of("k", "carriage\rreturn")
+        );
+    }
+
+    @Test
+    void stringValueBackspace() {
+        var json = """
+                {
+                    "k": "back\\bspace"
+                }""";
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isEqualTo(
+                Map.of("k", "bacspace")
+        );
+    }
+
+    @Test
+    void stringValueLinefeed() {
+        var json = """
+                {
+                    "k": "line\\nfeed"
+                }""";
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isEqualTo(
+                Map.of("k", "line\nfeed")
+        );
+    }
+
+    @Test
+    void stringValueFormFeed() {
+        var json = """
+                {
+                    "k": "form\\ffeed"
+                }""";
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isEqualTo(
+                Map.of("k", "form\ffeed")
+        );
+    }
+
+    @Test
+    void stringValueEscapedNonAscii() {
+        var json = """
+                {
+                    "k": "Stra\\u00dfe"
+                }""";
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isEqualTo(
+                Map.of("k", "Straße")
+        );
+    }
+
+    @Test
+    void stringValueCodepoints() {
+        var json = """
+                {
+                    "k": "\\u81ea\\u7531"
+                }""";
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isEqualTo(
+                Map.of("k", "自由")
         );
     }
 
@@ -648,7 +776,7 @@ class JsonWheelTest {
                         "k5", -3.3,
                         "k6", new HashMap<>() {{
                             put("innerkey1", "innervalue1");
-                            put("innerkey2", "inner\\\"value2");
+                            put("innerkey2", "inner\"value2");
                             put("innerkey3", "inner:value3");
                             put("innerkey4", "inner{value}4");
                             put("innerkey5", "inner[value]5");
