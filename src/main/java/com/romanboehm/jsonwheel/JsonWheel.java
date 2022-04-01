@@ -1,12 +1,12 @@
 package com.romanboehm.jsonwheel;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -50,7 +50,7 @@ class JsonWheel {
         private static final char[] TRUE_LITERAL = new char[]{'t', 'r', 'u', 'e'};
         private static final char[] FALSE_LITERAL = new char[]{'f', 'a', 'l', 's', 'e'};
         private static final char[] NULL_LITERAL = new char[]{'n', 'u', 'l', 'l'};
-        private static final Set<Character> NUMBER_CHARS = new HashSet<>(Arrays.asList('+', '.', '-'));
+        private static final List<Character> NUMBER_CHARS = Arrays.asList('+', '-', '.', 'e', 'E');
         private static final Map<Character, Character> ESCAPE_LOOKUP = new HashMap<>();
 
         static {
@@ -103,13 +103,31 @@ class JsonWheel {
                     return falseEnd;
                 default:
                     int numberEnd = readNumber(from);
-                    String number = buildString(from, numberEnd);
-                    if (number.contains(".")) {
-                        valueConsumer.accept(Double.parseDouble(number));
-                    } else {
-                        valueConsumer.accept(Integer.parseInt(number)); // Change to `Long::parseLong` if needed.
-                    }
+                    valueConsumer.accept(parseNumber(from, numberEnd));
                     return numberEnd;
+            }
+        }
+
+        private Number parseNumber(int from, int to) {
+            String n = buildString(from, to);
+            try {
+                if (n.contains(".") || n.toLowerCase().contains("e")) {
+                    BigDecimal bd = new BigDecimal(n);
+                    if (bd.compareTo(BigDecimal.valueOf(bd.doubleValue())) == 0) { // n within 64 bit precision?
+                        return Double.parseDouble(n);
+                    }
+                    return bd; // Use arbitrary precision
+                }
+                BigInteger bi = new BigInteger(n);
+                if (bi.compareTo(BigInteger.valueOf(bi.intValue())) == 0) { // n within 32 bit precision?
+                    return Integer.parseInt(n);
+                }
+                if (bi.compareTo(BigInteger.valueOf(bi.longValue())) == 0) { // n within 64 bit precision?
+                    return Long.parseLong(n);
+                }
+                return bi; // Use arbitrary precision
+            } catch (NumberFormatException ignored) {
+                throw new JsonWheelException("Invalid n literal at " + from + ": " + n);
             }
         }
 
@@ -165,8 +183,11 @@ class JsonWheel {
 
         private int readNumber(int from) {
             int numberEnd = from;
-            while (Character.isLetterOrDigit(chars[numberEnd]) || NUMBER_CHARS.contains(chars[numberEnd])) {
+            while (Character.isDigit(chars[numberEnd]) || NUMBER_CHARS.contains(chars[numberEnd])) {
                 numberEnd++;
+                if (numberEnd == chars.length) {
+                    break;
+                }
             }
             numberEnd--; // Move back to last known number char.
             if (numberEnd < from) {

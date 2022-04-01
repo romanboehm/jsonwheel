@@ -1,9 +1,10 @@
 package com.romanboehm.jsonwheel;
 
-import com.fasterxml.jackson.jr.ob.JSON;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.InstanceOfAssertFactories.MAP;
 
 class JsonWheelTest {
 
@@ -126,6 +128,117 @@ class JsonWheelTest {
     }
 
     @Test
+    void intWithExponentValueAsDouble1() {
+        var json = """
+                {
+                    "k1": 5e2,
+                    "k2": 5E2,
+                    "k3": 5e+2,
+                    "k4": 5E+2
+                }""";
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner)
+                .isEqualTo(
+                        Map.of(
+                                "k1", 5e2d,
+                                "k2", 5E2d,
+                                "k3", 5e+2d,
+                                "k4", 5E+2d
+                        )
+                )
+                .asInstanceOf(MAP).allSatisfy((k, v) -> assertThat(v).isEqualTo(500d));
+    }
+
+    @Test
+    void negativeIntWithExponentValueAsDouble1() {
+        var json = """
+                {
+                    "k1": -5e2,
+                    "k2": -5E2,
+                    "k3": -5e+2,
+                    "k4": -5E+2
+                }""";
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner)
+                .isEqualTo(
+                        Map.of(
+                                "k1", -5e2d,
+                                "k2", -5E2d,
+                                "k3", -5e+2d,
+                                "k4", -5E+2d
+                        )
+                )
+                .asInstanceOf(MAP).allSatisfy((k, v) -> assertThat(v).isEqualTo(-500d));
+    }
+
+    @Test
+    void integerPositiveSinglePrecisionBoundary() {
+        long number = Integer.MAX_VALUE;
+
+        var actual = JsonWheel.read(String.valueOf(number)).val(Integer.class);
+
+        assertThat(actual).isEqualTo(number);
+    }
+
+    @Test
+    void integerNegativeSinglePrecisionBoundary() {
+        long number = Integer.MIN_VALUE;
+
+        var actual = JsonWheel.read(String.valueOf(number)).val(Integer.class);
+
+        assertThat(actual).isEqualTo(number);
+    }
+
+    @Test
+    void integerPositiveDoublePrecisionBoundary() {
+        long number = Long.MAX_VALUE;
+
+        var actual = JsonWheel.read(String.valueOf(number)).val(Long.class);
+
+        assertThat(actual).isEqualTo(number);
+    }
+
+    @Test
+    void integerNegativeDoublePrecisionBoundary() {
+        long number = Long.MIN_VALUE;
+
+        var actual = JsonWheel.read(String.valueOf(number)).val(Long.class);
+
+        assertThat(actual).isEqualTo(number);
+    }
+
+    @Test
+    void integerOverflowLargePositiveToDoublePrecision() {
+        long number = Integer.MAX_VALUE + 1L;
+
+        var actual = JsonWheel.read(String.valueOf(number)).val(Long.class);
+
+        assertThat(actual).isEqualTo(number);
+    }
+
+    @Test
+    void integerOverflowLargePositiveToArbitraryPrecision() {
+        BigInteger number = BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.valueOf(1));
+
+        var actual = JsonWheel.read(number.toString()).val(BigInteger.class);
+
+        assertThat(actual).isEqualTo(number);
+    }
+
+    @Test
+    void integerUnderflowLargeNegativeToArbitraryPrecision() {
+        BigInteger number = BigInteger.valueOf(Long.MIN_VALUE).subtract(BigInteger.valueOf(1));
+
+        var actual = JsonWheel.read(number.toString()).val(BigInteger.class);
+
+        assertThat(actual).isEqualTo(number);
+    }
+
+    @Test
     void decimalValue() {
         var json = """
                 {
@@ -154,17 +267,143 @@ class JsonWheelTest {
     }
 
     @Test
-    void decimalWithExponentValue() {
+    void decimalWithExponentValueAsDouble1() {
         var json = """
                 {
-                    "k": 1.0e+3
+                    "k1": 5.1e2,
+                    "k2": 5.1E2,
+                    "k3": 5.1e+2,
+                    "k4": 5.1E+2
                 }""";
 
         var node = JsonWheel.read(json);
 
-        assertThat(node.inner).isEqualTo(
-                Map.of("k", 1000.0d)
-        );
+        assertThat(node.inner)
+                .isEqualTo(
+                        Map.of(
+                                "k1", 5.1e2d,
+                                "k2", 5.1E2d,
+                                "k3", 5.1e+2d,
+                                "k4", 5.1E+2d
+                        )
+                )
+                .asInstanceOf(MAP).allSatisfy((k, v) -> assertThat(v).isEqualTo(510d));
+    }
+
+    @Test
+    void decimalWithExponentValueAsDouble2() {
+        var json = """
+                {
+                    "k1": 5.1e-2,
+                    "k2": 5.1E-2
+                }""";
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner)
+                .isEqualTo(
+                        Map.of(
+                                "k1", 5.1e-2d,
+                                "k2", 5.1E-2d
+                        )
+                )
+                .asInstanceOf(MAP).allSatisfy((k, v) -> assertThat(v).isEqualTo(0.051d));
+    }
+
+    @Test
+    void negativeDecimalWithExponentValueAsDouble() {
+        var json = """
+                {
+                    "k1": -5.1e2,
+                    "k2": -5.1E2,
+                    "k3": -5.1e+2,
+                    "k4": -5.1E+2
+                }""";
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner)
+                .isEqualTo(
+                        Map.of(
+                                "k1", -5.1e2d,
+                                "k2", -5.1E2d,
+                                "k3", -5.1e+2d,
+                                "k4", -5.1E+2d
+                        )
+                )
+                .asInstanceOf(MAP).allSatisfy((k, v) -> assertThat(v).isEqualTo(-510d));
+    }
+
+    @Test
+    void decimalOverflowLargePositive() {
+        BigDecimal number = BigDecimal.valueOf(Double.MAX_VALUE).add(BigDecimal.valueOf(0.5d));
+
+        var actual = JsonWheel.read(number.toString()).val(BigDecimal.class);
+
+        assertThat(actual).isEqualTo(number);
+    }
+
+    @Test
+    void decimalOverflowLargeNegative() {
+        BigDecimal number = BigDecimal.valueOf(-Double.MAX_VALUE).subtract(BigDecimal.valueOf(0.5d));
+
+        var actual = JsonWheel.read(number.toString()).val(BigDecimal.class);
+
+        assertThat(actual).isEqualTo(number);
+    }
+
+    @Test
+    void decimalUnderflowSmallPositive() {
+        BigDecimal number = BigDecimal.valueOf(Double.MIN_VALUE).divide(BigDecimal.valueOf(2d), RoundingMode.HALF_UP);
+
+        var actual = JsonWheel.read(number.toString()).val(BigDecimal.class);
+
+        assertThat(actual).isEqualTo(number);
+    }
+
+    @Test
+    void decimalUnderflowSmallNegative() {
+        BigDecimal number = BigDecimal.valueOf(-Double.MIN_VALUE).divide(BigDecimal.valueOf(2d), RoundingMode.HALF_UP);
+
+        var actual = JsonWheel.read(number.toString()).val(BigDecimal.class);
+
+        assertThat(actual).isEqualTo(number);
+    }
+
+    @Test
+    void doublePositiveDoublePrecisionBoundaryLarge() {
+        double number = Double.MAX_VALUE;
+
+        var actual = JsonWheel.read(String.valueOf(number)).val(Double.class);
+
+        assertThat(actual).isEqualTo(number);
+    }
+
+    @Test
+    void doubleNegativeDoublePrecisionBoundaryLarge() {
+        double number = -Double.MAX_VALUE;
+
+        var actual = JsonWheel.read(String.valueOf(number)).val(Double.class);
+
+        assertThat(actual).isEqualTo(number);
+    }
+
+    @Test
+    void doublePositiveDoublePrecisionBoundarySmall() {
+        double number = Double.MIN_VALUE;
+
+        var actual = JsonWheel.read(String.valueOf(number)).val(Double.class);
+
+        assertThat(actual).isEqualTo(number);
+    }
+
+    @Test
+    void doubleNegativeDoublePrecisionBoundarySmall() {
+        double number = -Double.MIN_VALUE;
+
+        var actual = JsonWheel.read(String.valueOf(number)).val(Double.class);
+
+        assertThat(actual).isEqualTo(number);
     }
 
     @Test
