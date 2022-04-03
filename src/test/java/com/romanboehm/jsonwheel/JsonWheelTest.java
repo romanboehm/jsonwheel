@@ -659,6 +659,20 @@ class JsonWheelTest {
     }
 
     @Test
+    void stringValueNonAscii() {
+        var json = """
+                {
+                    "k": "Straße"
+                }""";
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).isEqualTo(
+                Map.of("k", "Straße")
+        );
+    }
+
+    @Test
     void stringValueEscapedNonAscii() {
         var json = """
                 {
@@ -673,17 +687,29 @@ class JsonWheelTest {
     }
 
     @Test
-    void stringValueCodepoints() {
+    void stringValueCodepoints1() {
         var json = """
                 {
-                    "k": "\\u81ea\\u7531"
+                    "k1": "\\u81ea\\u7531",
+                    "k2": "自由"
                 }""";
 
         var node = JsonWheel.read(json);
 
-        assertThat(node.inner).isEqualTo(
-                Map.of("k", "自由")
-        );
+        assertThat(node.inner).asInstanceOf(MAP).allSatisfy((k, v) -> assertThat(v).isEqualTo("自由"));
+    }
+
+    @Test
+    void stringValueCodepoints2() {
+        var json = """
+                {
+                    "k1": "\\uD83E\\uDDEA",
+                    "k2": "🧪"
+                }""";
+
+        var node = JsonWheel.read(json);
+
+        assertThat(node.inner).asInstanceOf(MAP).allSatisfy((k, v) -> assertThat(v).isEqualTo("🧪"));
     }
 
     @Test
