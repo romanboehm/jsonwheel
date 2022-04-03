@@ -45,9 +45,6 @@ class JsonWheel {
     }
 
     static class Deserializer {
-        private static final char[] TRUE_LITERAL = new char[]{'t', 'r', 'u', 'e'};
-        private static final char[] FALSE_LITERAL = new char[]{'f', 'a', 'l', 's', 'e'};
-        private static final char[] NULL_LITERAL = new char[]{'n', 'u', 'l', 'l'};
         private static final List<Character> NUMBER_CHARS = Arrays.asList('+', '-', '.', 'e', 'E');
         private static final Map<Character, Character> ESCAPE_LOOKUP = new HashMap<>();
 
@@ -88,17 +85,14 @@ class JsonWheel {
                     valueConsumer.accept(buildString(from + 1, closingQuote - 1));
                     return closingQuote;
                 case 'n':
-                    int nullEnd = readChars(NULL_LITERAL, from);
                     valueConsumer.accept(null);
-                    return nullEnd;
+                    return from + 3;
                 case 't':
-                    int trueEnd = readChars(TRUE_LITERAL, from);
                     valueConsumer.accept(true);
-                    return trueEnd;
+                    return from + 3;
                 case 'f':
-                    int falseEnd = readChars(FALSE_LITERAL, from);
                     valueConsumer.accept(false);
-                    return falseEnd;
+                    return from + 4;
                 default:
                     int numberEnd = readNumber(from);
                     valueConsumer.accept(parseNumber(from, numberEnd));
@@ -168,15 +162,6 @@ class JsonWheel {
             } while (chars[delim] == ',');
 
             return delim;
-        }
-
-        private int readChars(char[] literal, int from) {
-            for (int i = 0; i < literal.length && (from + i) < chars.length; i++) {
-                if (from + i >= chars.length || chars[from + i] != literal[i]) {
-                    throw new JsonWheelException("Invalid literal at " + from);
-                }
-            }
-            return from + (literal.length - 1);
         }
 
         private int readNumber(int from) {
