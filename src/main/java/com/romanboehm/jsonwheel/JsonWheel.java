@@ -84,7 +84,7 @@ class JsonWheel {
                     return readArrayValue(list, from);
                 case '"':
                     int closingQuote = next('"', from + 1);
-                    valueConsumer.accept(buildString(from + 1, closingQuote - 1));
+                    valueConsumer.accept(parseString(from + 1, closingQuote - 1));
                     return closingQuote;
                 case 'n':
                     valueConsumer.accept(null);
@@ -102,29 +102,6 @@ class JsonWheel {
             }
         }
 
-        private Number parseNumber(int from, int to) {
-            String n = buildString(from, to);
-            try {
-                if (n.contains(".") || n.toLowerCase().contains("e")) {
-                    BigDecimal bd = new BigDecimal(n);
-                    if (bd.compareTo(BigDecimal.valueOf(bd.doubleValue())) == 0) { // n within 64 bit precision?
-                        return Double.parseDouble(n);
-                    }
-                    return bd; // Use arbitrary precision
-                }
-                BigInteger bi = new BigInteger(n);
-                if (bi.compareTo(BigInteger.valueOf(bi.intValue())) == 0) { // n within 32 bit precision?
-                    return Integer.parseInt(n);
-                }
-                if (bi.compareTo(BigInteger.valueOf(bi.longValue())) == 0) { // n within 64 bit precision?
-                    return Long.parseLong(n);
-                }
-                return bi; // Use arbitrary precision
-            } catch (NumberFormatException ignored) {
-                throw new JsonWheelException("Invalid n literal at " + from + ": " + n);
-            }
-        }
-
         private int readObjectValue(Map<String, Object> map, int from) {
             int next = next(from + 1);
 
@@ -138,7 +115,7 @@ class JsonWheel {
             do {
                 int keyStart = next('"', delim) + 1;
                 int keyEnd = next('"', keyStart) - 1;
-                String key = buildString(keyStart, keyEnd);
+                String key = parseString(keyStart, keyEnd);
                 int colon = next(':', keyEnd);
                 int valueStart = next(colon + 1);
                 int valueEnd = readValue(v -> map.put(key, v), valueStart);
@@ -194,30 +171,54 @@ class JsonWheel {
             throw new JsonWheelException("Could not find non-whitespace, checking from " + from);
         }
 
-        private String buildString(int from, int to) {
+
+        private Number parseNumber(int from, int to) {
+            String n = parseString(from, to);
+            try {
+                if (n.contains(".") || n.toLowerCase().contains("e")) {
+                    BigDecimal bd = new BigDecimal(n);
+                    if (bd.compareTo(BigDecimal.valueOf(bd.doubleValue())) == 0) { // n within 64 bit precision?
+                        return Double.parseDouble(n);
+                    }
+                    return bd; // Use arbitrary precision
+                }
+                BigInteger bi = new BigInteger(n);
+                if (bi.compareTo(BigInteger.valueOf(bi.intValue())) == 0) { // n within 32 bit precision?
+                    return Integer.parseInt(n);
+                }
+                if (bi.compareTo(BigInteger.valueOf(bi.longValue())) == 0) { // n within 64 bit precision?
+                    return Long.parseLong(n);
+                }
+                return bi; // Use arbitrary precision
+            } catch (NumberFormatException ignored) {
+                throw new JsonWheelException("Invalid n literal at " + from + ": " + n);
+            }
+        }
+
+        private String parseString(int from, int to) {
             if (from < 0 || to >= chars.length) {
                 throw new JsonWheelException("Out of bounds building String from " + from + " to " + to);
             }
             StringBuilder builder = new StringBuilder();
             while (from <= to) {
                 if (chars[from] == '\\' && from + 1 <= to) {
-                    from++; // Skip backslash. Then check:
-                    // a) Codepoint in u-syntax.
+                    from++; // Skip backslash. Then check
                     switch (chars[from]) {
+                        // a) codepoint in u-syntax, or ...
                         case 'u':
                             int cpStart = from + 1; // Skip "u".
                             int cpEnd = cpStart + 3;
                             if (cpEnd > to) {
                                 throw new JsonWheelException("Invalid codepoint at " + from);
                             }
-                            builder.appendCodePoint(Integer.parseInt(buildString(cpStart, cpEnd), 16));
+                            builder.appendCodePoint(Integer.parseInt(parseString(cpStart, cpEnd), 16));
                             from = cpEnd;
                             break;
-                        // b) Backspace.
+                        // b) backspace, or ...
                         case 'b':
                             builder.deleteCharAt(Math.max(builder.length() - 1, 0));
                             break;
-                        // c) Other escaped characters for which we can use the lookup table.
+                        // c) other escaped characters for which we can use the lookup table.
                         default:
                             Character escapeLookup = ESCAPE_LOOKUP.get(chars[from]);
                             if (escapeLookup == null) {
