@@ -167,18 +167,10 @@ class JsonWheel {
         }
 
         private int readNumber(int from) {
-            int numberEnd = from;
-            while (Character.isDigit(chars[numberEnd]) || NUMBER_CHARS.contains(chars[numberEnd])) {
-                numberEnd++;
-                if (numberEnd == chars.length) {
-                    break;
-                }
+            while (from < chars.length && (Character.isDigit(chars[from]) || NUMBER_CHARS.contains(chars[from]))) {
+                from++;
             }
-            numberEnd--; // Move back to last known number char.
-            if (numberEnd < from) {
-                throw new JsonWheelException("Invalid number literal at " + from);
-            }
-            return numberEnd;
+            return from - 1;
         }
 
         private int next(char c, int from) {
