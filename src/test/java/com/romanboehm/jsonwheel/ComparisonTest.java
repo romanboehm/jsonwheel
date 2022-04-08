@@ -2,9 +2,14 @@ package com.romanboehm.jsonwheel;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -203,7 +208,53 @@ class ComparisonTest {
                         "k": "\\u81ea\\u7531"
                     }"""
     })
-    void produceSameMap(String json) throws IOException {
+    void complexJsonDotOrgExamples(String json) throws IOException {
+        var wheel = JsonWheel.read(json).inner;
+        var jackson = JSON.std.mapFrom(json);
+        assertThat(wheel).isEqualTo(jackson);
+    }
+
+    // Files taken from https://www.json.org/JSON_checker/test.zip.
+    @ParameterizedTest(name = "pass{index}.json")
+    @MethodSource("jsonDotOrgPassJsons")
+    void jsonDotOrgPass(String json) throws IOException {
+        var wheel = JsonWheel.read(json).inner;
+        var jackson = JSON.std.anyFrom(json);
+        assertThat(wheel).isEqualTo(jackson);
+    }
+
+    private static List<String> jsonDotOrgPassJsons() throws URISyntaxException, IOException {
+        try (var stream = Files.list(Paths.get(ComparisonTest.class.getResource("/jsondotorg/pass").toURI()))) {
+            return stream.map(path -> {
+                try {
+                    return Files.readString(path);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }).toList();
+        }
+    }
+
+    @ParameterizedTest(name = ParameterizedTest.INDEX_PLACEHOLDER)
+    @ValueSource(strings = {
+            """
+                    {
+                        "k": "va\\"lue\\""
+                    }""",
+            """
+                    {
+                        "k": "value\\\\"
+                    }""",
+            """
+                    {
+                        "k": "Stra\u00dfe"
+                    }""",
+            """
+                    {
+                        "k": "\\u81ea\\u7531"
+                    }"""
+    })
+    void stringEncoding(String json) throws IOException {
         var wheel = JsonWheel.read(json).inner;
         var jackson = JSON.std.mapFrom(json);
         assertThat(wheel).isEqualTo(jackson);
