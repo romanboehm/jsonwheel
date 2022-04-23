@@ -177,7 +177,8 @@ class JsonWheel {
             try {
                 if (n.contains(".") || n.toLowerCase().contains("e")) {
                     BigDecimal bd = new BigDecimal(n);
-                    if (bd.compareTo(BigDecimal.valueOf(bd.doubleValue())) == 0) { // n within 64 bit precision?
+                    double dv = bd.doubleValue();
+                    if (dv != Double.POSITIVE_INFINITY && dv != Double.NEGATIVE_INFINITY && bd.compareTo(BigDecimal.valueOf(dv)) == 0) { // n within 64 bit precision?
                         return Double.parseDouble(n);
                     }
                     return bd; // Use arbitrary precision
@@ -190,8 +191,8 @@ class JsonWheel {
                     return Long.parseLong(n);
                 }
                 return bi; // Use arbitrary precision
-            } catch (NumberFormatException ignored) {
-                throw new JsonWheelException("Invalid n literal at " + from + ": " + n);
+            } catch (NumberFormatException nfe) {
+                throw new JsonWheelException("Invalid number literal " + n + " at " + from + ": " + nfe.getMessage());
             }
         }
 
