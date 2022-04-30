@@ -153,12 +153,14 @@ class JsonWheel {
 
         private int next(char c, int from) {
             char prev = '\0';
+            boolean isEscaped = false;
             for (; from < chars.length; from++) {
+                isEscaped = prev == '\\' && !isEscaped; // This handles strings like "\\".
                 char current = chars[from];
-                if ('\\' != prev && c == current) {
+                if (!isEscaped && c == current) {
                     return from;
                 }
-                prev = chars[from];
+                prev = current;
             }
             throw new JsonWheelException("Could not find " + c + ", checking from " + from);
         }
