@@ -50,6 +50,7 @@ class JsonWheel {
 
         static {
             ESCAPE_LOOKUP.put('n', '\n');
+            ESCAPE_LOOKUP.put('b', '\b');
             ESCAPE_LOOKUP.put('t', '\t');
             ESCAPE_LOOKUP.put('f', '\f');
             ESCAPE_LOOKUP.put('r', '\r');
@@ -150,12 +151,14 @@ class JsonWheel {
 
         private int next(char c, int from) {
             char prev = '\0';
+            boolean isEscaped = false;
             for (; from < chars.length; from++) {
+                isEscaped = prev == '\\' && !isEscaped; // This handles strings like "\\".
                 char current = chars[from];
-                if ('\\' != prev && c == current) {
+                if (!isEscaped && c == current) {
                     return from;
                 }
-                prev = chars[from];
+                prev = current;
             }
             throw new JsonWheelException("Could not find " + c + ", checking from " + from);
         }
@@ -175,7 +178,8 @@ class JsonWheel {
             try {
                 if (n.contains(".") || n.toLowerCase().contains("e")) {
                     BigDecimal bd = new BigDecimal(n);
-                    if (bd.compareTo(BigDecimal.valueOf(bd.doubleValue())) == 0) { // n within 64 bit precision?
+                    double dv = bd.doubleValue();
+                    if (dv != Double.POSITIVE_INFINITY && dv != Double.NEGATIVE_INFINITY && bd.compareTo(BigDecimal.valueOf(dv)) == 0) { // n within 64 bit precision?
                         return Double.parseDouble(n);
                     }
                     return bd; // Use arbitrary precision
@@ -188,8 +192,8 @@ class JsonWheel {
                     return Long.parseLong(n);
                 }
                 return bi; // Use arbitrary precision
-            } catch (NumberFormatException ignored) {
-                throw new JsonWheelException("Invalid n literal at " + from + ": " + n);
+            } catch (NumberFormatException nfe) {
+                throw new JsonWheelException("Invalid number literal " + n + " at " + from + ": " + nfe.getMessage());
             }
         }
 
@@ -201,28 +205,22 @@ class JsonWheel {
             while (from <= to) {
                 if (chars[from] == '\\' && from + 1 <= to) {
                     from++; // Skip backslash. Then check
-                    switch (chars[from]) {
-                        // a) codepoint in u-syntax, or ...
-                        case 'u':
-                            int cpStart = from + 1; // Skip "u".
-                            int cpEnd = cpStart + 3;
-                            if (cpEnd > to) {
-                                throw new JsonWheelException("Invalid codepoint at " + from);
-                            }
-                            builder.appendCodePoint(Integer.parseInt(parseString(cpStart, cpEnd), 16));
-                            from = cpEnd;
-                            break;
-                        // b) backspace, or ...
-                        case 'b':
-                            builder.deleteCharAt(Math.max(builder.length() - 1, 0));
-                            break;
-                        // c) other escaped characters for which we can use the lookup table.
-                        default:
-                            Character escapeLookup = ESCAPE_LOOKUP.get(chars[from]);
-                            if (escapeLookup == null) {
-                                throw new JsonWheelException("Invalid escape sequence at " + from + ": " + chars[from]);
-                            }
-                            builder.append(escapeLookup);
+                    // a) codepoint in u-syntax, or ...
+                    if (chars[from] == 'u') {
+                        int cpStart = from + 1; // Skip "u".
+                        int cpEnd = cpStart + 3;
+                        if (cpEnd > to) {
+                            throw new JsonWheelException("Invalid codepoint at " + from);
+                        }
+                        builder.appendCodePoint(Integer.parseInt(parseString(cpStart, cpEnd), 16));
+                        from = cpEnd;
+                    // b) other escaped characters for which we can use the lookup table.
+                    } else {
+                        Character escapeLookup = ESCAPE_LOOKUP.get(chars[from]);
+                        if (escapeLookup == null) {
+                            throw new JsonWheelException("Invalid escape sequence at " + from + ": " + chars[from]);
+                        }
+                        builder.append(escapeLookup);
                     }
                 } else {
                     builder.append(chars[from]);
