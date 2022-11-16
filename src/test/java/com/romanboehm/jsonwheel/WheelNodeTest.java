@@ -1,6 +1,9 @@
 package com.romanboehm.jsonwheel;
 
+import com.romanboehm.jsonwheel.JsonWheel.JsonWheelException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -83,11 +86,51 @@ class WheelNodeTest {
     }
 
     @Test
-    void accessTopLevel() {
-        var json = """
-                true""";
+    void accessTopLevelNull() {
+        var json = "null";
+        var node = JsonWheel.read(json);
+        assertThat(node.val(Object.class)).isNull();
+    }
 
+    @Test
+    void accessTopLevelTrue() {
+        var json = "true";
         var node = JsonWheel.read(json);
         assertThat(node.val(Boolean.class)).isTrue();
+    }
+
+    @Test
+    void accessTopLevelFalse() {
+        var json = "false";
+        var node = JsonWheel.read(json);
+        assertThat(node.val(Boolean.class)).isFalse();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"notnull", "fakefalse", "thetrue"})
+    void accessInvalidLiteralValue(String input) {
+        var json = """
+                {
+                    "foo": %s,
+                    "bar": "ohoh"
+                }""".formatted(input);
+
+        assertThatThrownBy(() -> JsonWheel.read(json))
+                .isInstanceOf(JsonWheelException.class);
+    }
+
+    @Test
+    void accessBooleanValue() {
+        var json = """
+                {
+                    "foo": true,
+                    "bar": "ohoh"
+                }""";
+
+        var node = JsonWheel.read(json);
+        var foo = node.get("foo");
+        var bar = node.get("bar");
+        assertThat(foo.val(Boolean.class)).isTrue();
+        assertThat(bar.val(String.class)).isEqualTo("ohoh");
     }
 }
