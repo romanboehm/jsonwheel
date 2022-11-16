@@ -74,6 +74,8 @@ class JsonWheel {
         }
 
         private int readValue(Consumer<Object> valueConsumer, int from) {
+            int to;
+            String str;
             switch (chars[from]) {
                 case '{':
                     Map<String, Object> map = new HashMap<>();
@@ -88,14 +90,29 @@ class JsonWheel {
                     valueConsumer.accept(parseString(from + 1, closingQuote - 1));
                     return closingQuote;
                 case 'n':
+                    to = from + 3;
+                    str = new String(Arrays.copyOfRange(chars, from, to + 1));
+                    if (!"null".equals(str)) {
+                        throw new JsonWheelException("Invalid value '" + str + "' at " + from);
+                    }
                     valueConsumer.accept(null);
-                    return from + 3;
+                    return to;
                 case 't':
+                    to = from + 3;
+                    str = new String(Arrays.copyOfRange(chars, from, to + 1));
+                    if (!"true".equals(str)) {
+                        throw new JsonWheelException("Invalid value '" + str + "' at " + from);
+                    }
                     valueConsumer.accept(true);
-                    return from + 3;
+                    return to;
                 case 'f':
+                    to = from + 4;
+                    str = new String(Arrays.copyOfRange(chars, from, to + 1));
+                    if (!"false".equals(str)) {
+                        throw new JsonWheelException("Invalid value '" + str + "' at " + from);
+                    }
                     valueConsumer.accept(false);
-                    return from + 4;
+                    return to;
                 default:
                     int numberEnd = readNumber(from);
                     valueConsumer.accept(parseNumber(from, numberEnd));
