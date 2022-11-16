@@ -90,4 +90,19 @@ class WheelNodeTest {
         var node = JsonWheel.read(json);
         assertThat(node.val(Boolean.class)).isTrue();
     }
+
+    @Test
+    void accessInvalidLiteralValue() {
+        var json = """
+                {
+                    "foo": thevalue,
+                    "bar": "ohoh"
+                }""";
+
+        var root = JsonWheel.read(json);
+        var foo = root.get("foo");
+        var bar = root.get("bar");
+        assertThat(foo.val(Boolean.class)).isTrue();
+        assertThat(bar.val(String.class)).isNull();
+    }
 }
