@@ -17,7 +17,7 @@ echo "Tagging commit ..."
 git tag "$VERSION"
 
 echo "Pushing commit ..."
-git push origin
+git push origin --force-with-lease
 
 echo "Pushing tag ..."
 git push origin "$VERSION"

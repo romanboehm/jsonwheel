@@ -17,15 +17,15 @@ fi
 
 echo "Setting \`project.version\` property ..."
 ./mvnw versions:set -DnewVersion="$VERSION" \
-  && rm --force pom.xml.versionsBackup
+  && rm -f pom.xml.versionsBackup
 
 echo "Copying source file to project root and removing package declaration from source file ..."
-rm --force JsonWheel.java \
+rm -f JsonWheel.java \
   && tail src/main/java/com/romanboehm/jsonwheel/JsonWheel.java --lines=+3 > JsonWheel.java
 
 echo "Substituting version in hyperlink to source file ..."
 export VERSION \
-  && rm --force README.md \
+  && rm -f README.md \
   && envsubst < README.md.template > README.md \
 
 exit 0
