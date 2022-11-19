@@ -157,7 +157,7 @@ class JsonWheel {
             while (to < chars.length && Character.isLetter(chars[to])) {
                 to++;
             }
-            String literal = parseString(from, to - 1);
+            String literal = new String(Arrays.copyOfRange(chars, from, to));
             if (!literal.equals(expected)) {
                 throw new JsonWheelException("Invalid literal '" + literal + "' at " + from);
             }
@@ -189,7 +189,7 @@ class JsonWheel {
 
 
         private Number parseNumber(int from, int to) {
-            String n = parseString(from, to);
+            String n = new String(Arrays.copyOfRange(chars, from, to + 1));
             try {
                 if (n.contains(".") || n.toLowerCase().contains("e")) {
                     BigDecimal bd = new BigDecimal(n);
@@ -227,7 +227,7 @@ class JsonWheel {
                         if (cpEnd > to) {
                             throw new JsonWheelException("Invalid codepoint at " + from);
                         }
-                        builder.appendCodePoint(Integer.parseInt(parseString(cpStart, cpEnd), 16));
+                        builder.appendCodePoint(Integer.parseInt(new String(Arrays.copyOfRange(chars, cpStart, cpEnd + 1)), 16));
                         from = cpEnd;
                         // b) other escaped characters for which we can use the lookup table.
                     } else {
