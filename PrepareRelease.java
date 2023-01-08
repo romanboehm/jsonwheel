@@ -1,8 +1,7 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.nio.file.StandardOpenOption;
 
 class PrepareRelease {
 
@@ -10,12 +9,14 @@ class PrepareRelease {
     private static final Path SRC = Path.of("src/main/java/com/romanboehm/jsonwheel");
 
     public static void main(String[] args) throws IOException {
-        List<String> withoutPackageDecl = Files.readAllLines(SRC.resolve("JsonWheel.java")).stream()
+        var withoutPackageDecl = Files.readAllLines(SRC.resolve("JsonWheel.java")).stream()
                 .skip(2)
-                .collect(Collectors.toList());
+                .toList();
         Files.createDirectories(DEST);
-        Files.deleteIfExists(DEST.resolve("JsonWheel.java"));
-        Files.write(Files.createFile(DEST.resolve("JsonWheel.java")), withoutPackageDecl);
+        Files.write(
+                DEST.resolve("JsonWheel.java"),
+                withoutPackageDecl,
+                StandardOpenOption.CREATE
+        );
     }
-
 }
