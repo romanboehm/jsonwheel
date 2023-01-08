@@ -15,6 +15,7 @@ jobs:
       - name: build with Maven
         run: ./mvnw --batch-mode package
       - name: upload source distribution
+        if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v3
         with:
           name: source-distribution
