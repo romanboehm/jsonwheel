@@ -33,7 +33,7 @@ If the answer is "no": Fine by me, I still had fun writing the thing. :)
 2. Adjust the package declaration, i.e. introduce one, if needed.
 ### With JBang's `//SOURCES`
 1. Create a JBang script, e.g. with `jbang init`.
-2. Add the `//SOURCES` JBang directive, as [demonstrated here](https://carbon.now.sh/6c3f872f48f310534645566e2564971a). If you care for your script to not break, you best set a version directly in the link and don't use the `main` blob.
+2. Use the `//SOURCES https://github.com/romanboehm/jsonwheel/blob/main/src/main/java/com/romanboehm/jsonwheel/JsonWheel.java` directive to include the JSON Wheel source
 
 Then you can ...
 
