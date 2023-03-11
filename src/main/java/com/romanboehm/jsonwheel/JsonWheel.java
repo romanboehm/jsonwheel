@@ -231,7 +231,7 @@ class JsonWheel {
                         }
                         builder.appendCodePoint(Integer.parseInt(new String(Arrays.copyOfRange(chars, cpStart, cpEnd + 1)), 16));
                         from = cpEnd;
-                    // b) other escaped characters for which we can use the lookup table.
+                        // b) other escaped characters for which we can use the lookup table.
                     } else {
                         Character escapeLookup = ESCAPE_LOOKUP.get(chars[from]);
                         if (escapeLookup == null) {
