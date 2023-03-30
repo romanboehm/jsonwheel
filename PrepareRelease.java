@@ -5,18 +5,17 @@ import java.nio.file.StandardOpenOption;
 
 class PrepareRelease {
 
-    private static final Path DEST = Path.of("target/distribution");
-    private static final Path SRC = Path.of("src/main/java/com/romanboehm/jsonwheel");
-
-    public static void main(String[] args) throws IOException {
-        var withoutPackageDecl = Files.readAllLines(SRC.resolve("JsonWheel.java")).stream()
-                .skip(2)
-                .toList();
-        Files.createDirectories(DEST);
+    public static void main(String... args) throws IOException {
+        var src = Path.of(args[0]);
+        var dest = Path.of(args[1]);
+        var withoutPackageDecl = Files.readAllLines(src).stream()
+                                      .skip(2)
+                                      .toList();
+        Files.createDirectories(dest.getParent());
         Files.write(
-                DEST.resolve("JsonWheel.java"),
-                withoutPackageDecl,
-                StandardOpenOption.CREATE
+                            dest,
+                            withoutPackageDecl,
+                            StandardOpenOption.CREATE
         );
     }
 }

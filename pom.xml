@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.romanboehm</groupId>
     <artifactId>jsonwheel</artifactId>
-    <version>1.3.2</version>
+    <version>1.1.0-SNAPSHOT</version>
     <name>jsonwheel</name>
+    <description>A 250 lines single-source-file hackable JSON deserializer for the JVM. Reinventing the JSON wheel.</description>
+    <inceptionYear>2022</inceptionYear>
+
+    <scm>
+        <url>https://github.com/romanboehm/jsonwheel</url>
+        <developerConnection>scm:git:https://github.com/romanboehm/jsonwheel.git</developerConnection>
+    </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -21,6 +27,8 @@
         <assertj-core.version>3.22.0</assertj-core.version>
         <jackson-jr-objects.version>2.13.2</jackson-jr-objects.version>
         <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
+        <jreleaser-maven-plugin.version>1.5.1</jreleaser-maven-plugin.version>
+        <maven-release-plugin.version>3.0.0</maven-release-plugin.version>
     </properties>
 
     <!-- IntelliJ Idea needs this workaround for different JDK versions for source vs. testSource. -->
@@ -107,6 +115,7 @@
                 <version>${exec-maven-plugin.version}</version>
                 <executions>
                     <execution>
+                        <id>prepare-release</id>
                         <phase>package</phase>
                         <goals>
                             <goal>exec</goal>
@@ -117,10 +126,45 @@
                     <executable>java</executable>
                     <arguments>
                         <argument>PrepareRelease.java</argument>
+                        <argument>${project.build.sourceDirectory}/com/romanboehm/jsonwheel/JsonWheel.java</argument>
+                        <argument>${project.build.outputDirectory}/distributions/JsonWheel.java</argument>
                     </arguments>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.jreleaser</groupId>
+                <artifactId>jreleaser-maven-plugin</artifactId>
+                <version>${jreleaser-maven-plugin.version}</version>
+                <configuration>
+                    <jreleaser>
+                        <project>
+                            <name>${project.name}</name>
+                        </project>
+                        <release>
+                            <github>
+                                <owner>romanboehm</owner>
+                                <skipTag>true</skipTag>
+                            </github>
+                        </release>
+                        <files>
+                            <artifacts>
+                                <artifact>
+                                    <!-- File created during `package` using exec-maven-plugin. -->
+                                    <path>${project.build.outputDirectory}/distributions/JsonWheel.java</path>
+                                </artifact>
+                            </artifacts>
+                        </files>
+                    </jreleaser>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>${maven-release-plugin.version}</version>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

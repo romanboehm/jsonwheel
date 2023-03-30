@@ -1,3 +1,7 @@
 target
 .vscode
 .idea
+/trace.log
+out
+release.properties
+/pom.xml.releaseBackup
