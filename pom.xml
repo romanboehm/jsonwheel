@@ -5,7 +5,7 @@
 
     <groupId>com.romanboehm</groupId>
     <artifactId>jsonwheel</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1-SNAPSHOT</version>
     <name>jsonwheel</name>
     <description>A 250 lines single-source-file hackable JSON deserializer for the JVM. Reinventing the JSON wheel.</description>
     <inceptionYear>2022</inceptionYear>
@@ -13,7 +13,7 @@
     <scm>
         <url>https://github.com/romanboehm/jsonwheel</url>
         <developerConnection>scm:git:https://github.com/romanboehm/jsonwheel.git</developerConnection>
-      <tag>v1.2.0</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <properties>
