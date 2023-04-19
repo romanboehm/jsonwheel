@@ -1,11 +1,11 @@
 package com.romanboehm.jsonwheel;
 
-import org.junit.jupiter.params.provider.Arguments;
+import static org.junit.jupiter.api.Named.named;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Named.named;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
+import org.junit.jupiter.params.provider.Arguments;
 
 class StringTest extends JsonWheelTestMatrix {
 
@@ -37,7 +37,6 @@ class StringTest extends JsonWheelTestMatrix {
                 arguments(named("non-ASCII 3", new Arg("\"🧪\"", "🧪"))),
                 arguments(named("escaped non-ASCII 1", new Arg("\"Stra\\u00dfe\"", "Straße"))),
                 arguments(named("escaped non-ASCII 2", new Arg("\"\\u81ea\\u7531\"", "自由"))),
-                arguments(named("escaped non-ASCII 3", new Arg("\"\\uD83E\\uDDEA\"", "🧪")))
-        );
+                arguments(named("escaped non-ASCII 3", new Arg("\"\\uD83E\\uDDEA\"", "🧪"))));
     }
 }

@@ -1,23 +1,20 @@
 package com.romanboehm.jsonwheel;
 
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.api.InstanceOfAssertFactories.MAP;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
-import static org.assertj.core.api.InstanceOfAssertFactories.MAP;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class JsonWheelTestMatrix {
-
-    record Arg(String in, Object expected) {
-    }
 
     abstract List<Arguments> args();
 
@@ -28,7 +25,6 @@ abstract class JsonWheelTestMatrix {
 
         assertThat(actual.inner).isEqualTo(arg.expected);
     }
-
 
     @ParameterizedTest(name = "{index}: {0}")
     @MethodSource("args")
@@ -41,8 +37,7 @@ abstract class JsonWheelTestMatrix {
         assertThat(actual.inner)
                 .asInstanceOf(MAP)
                 .containsExactly(
-                        entry("k", arg.expected)
-                );
+                        entry("k", arg.expected));
     }
 
     @ParameterizedTest(name = "{index}: {0}")
@@ -62,8 +57,7 @@ abstract class JsonWheelTestMatrix {
                 .containsExactly(
                         entry("k1", arg.expected),
                         entry("k2", false),
-                        entry("k3", false)
-                );
+                        entry("k3", false));
     }
 
     @ParameterizedTest(name = "{index}: {0}")
@@ -83,8 +77,7 @@ abstract class JsonWheelTestMatrix {
                 .containsExactly(
                         entry("k1", false),
                         entry("k2", arg.expected),
-                        entry("k3", false)
-                );
+                        entry("k3", false));
     }
 
     @ParameterizedTest(name = "{index}: {0}")
@@ -104,8 +97,7 @@ abstract class JsonWheelTestMatrix {
                 .containsExactly(
                         entry("k1", false),
                         entry("k2", false),
-                        entry("k3", arg.expected)
-                );
+                        entry("k3", arg.expected));
     }
 
     @ParameterizedTest(name = "{index}: {0}")
@@ -164,5 +156,8 @@ abstract class JsonWheelTestMatrix {
         var actual = JsonWheel.read(json);
 
         assertThat(actual.inner).isEqualTo(Arrays.asList(null, arg.expected, null));
+    }
+
+    record Arg(String in, Object expected) {
     }
 }

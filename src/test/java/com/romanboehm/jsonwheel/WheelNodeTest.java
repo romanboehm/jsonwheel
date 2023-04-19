@@ -1,12 +1,13 @@
 package com.romanboehm.jsonwheel;
 
-import com.romanboehm.jsonwheel.JsonWheel.JsonWheelException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import com.romanboehm.jsonwheel.JsonWheel.JsonWheelException;
 
 class WheelNodeTest {
 
@@ -30,8 +31,7 @@ class WheelNodeTest {
         assertThat(bar.elements()).extracting(wn -> wn.val(Integer.class)).containsExactly(
                 1,
                 2,
-                3
-        );
+                3);
 
         var baz = node.get("foo").get("baz");
         assertThat(baz.val(String.class)).isEqualTo("qux");
@@ -68,7 +68,6 @@ class WheelNodeTest {
                 }""";
 
         var node = JsonWheel.read(json);
-
 
         assertThatThrownBy(() -> node.get("foo").val(Integer.class))
                 .isInstanceOf(RuntimeException.class);
@@ -107,7 +106,7 @@ class WheelNodeTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"notnull", "fakefalse", "thetrue"})
+    @ValueSource(strings = { "notnull", "fakefalse", "thetrue" })
     void accessInvalidLiteralValue(String input) {
         var json = """
                 {

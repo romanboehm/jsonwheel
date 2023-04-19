@@ -30,6 +30,7 @@
         <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
         <jreleaser-maven-plugin.version>1.5.1</jreleaser-maven-plugin.version>
         <maven-release-plugin.version>3.0.0</maven-release-plugin.version>
+        <formatter-maven-plugin.version>2.22.0</formatter-maven-plugin.version>
     </properties>
 
     <!-- IntelliJ Idea needs this workaround for different JDK versions for source vs. testSource. -->
@@ -102,6 +103,21 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>net.revelc.code.formatter</groupId>
+                <artifactId>formatter-maven-plugin</artifactId>
+                <version>${formatter-maven-plugin.version}</version>
+                <configuration>
+                    <configFile>${project.basedir}/eclipse-code-formatter.xml</configFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>validate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>

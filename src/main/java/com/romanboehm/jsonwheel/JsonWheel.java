@@ -15,6 +15,11 @@ import java.util.function.Consumer;
  */
 class JsonWheel {
 
+    static WheelNode read(String json) {
+        char[] chars = json.toCharArray();
+        return new Deserializer(chars).readInternal();
+    }
+
     static class JsonWheelException extends RuntimeException {
         JsonWheelException(String msg) {
             super(msg);
@@ -189,7 +194,6 @@ class JsonWheel {
             throw new JsonWheelException("Could not find non-whitespace, checking from " + from);
         }
 
-
         private Number parseNumber(int from, int to) {
             String n = new String(Arrays.copyOfRange(chars, from, to + 1));
             try {
@@ -209,7 +213,8 @@ class JsonWheel {
                     return Long.parseLong(n);
                 }
                 return bi; // Use arbitrary precision
-            } catch (NumberFormatException nfe) {
+            }
+            catch (NumberFormatException nfe) {
                 throw new JsonWheelException("Invalid number literal " + n + " at " + from + ": " + nfe.getMessage());
             }
         }
@@ -231,25 +236,22 @@ class JsonWheel {
                         }
                         builder.appendCodePoint(Integer.parseInt(new String(Arrays.copyOfRange(chars, cpStart, cpEnd + 1)), 16));
                         from = cpEnd;
+                    }
                     // b) other escaped characters for which we can use the lookup table.
-                    } else {
+                    else {
                         Character escapeLookup = ESCAPE_LOOKUP.get(chars[from]);
                         if (escapeLookup == null) {
                             throw new JsonWheelException("Invalid escape sequence at " + from + ": " + chars[from]);
                         }
                         builder.append(escapeLookup);
                     }
-                } else {
+                }
+                else {
                     builder.append(chars[from]);
                 }
                 from++;
             }
             return builder.toString();
         }
-    }
-
-    static WheelNode read(String json) {
-        char[] chars = json.toCharArray();
-        return new Deserializer(chars).readInternal();
     }
 }

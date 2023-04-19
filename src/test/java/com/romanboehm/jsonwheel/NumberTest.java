@@ -1,13 +1,13 @@
 package com.romanboehm.jsonwheel;
 
-import org.junit.jupiter.params.provider.Arguments;
+import static org.junit.jupiter.api.Named.named;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
-import static org.junit.jupiter.api.Named.named;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
+import org.junit.jupiter.params.provider.Arguments;
 
 class NumberTest extends JsonWheelTestMatrix {
 
@@ -43,7 +43,6 @@ class NumberTest extends JsonWheelTestMatrix {
                 arguments(named("positive decimal scientific notation positive exponent", new Arg("5.1e2", 510d))),
                 arguments(named("negative decimal scientific notation positive exponent", new Arg("-5.1e2", -510d))),
                 arguments(named("positive decimal scientific notation negative exponent", new Arg("5.1e-2", 0.051d))),
-                arguments(named("negative decimal scientific notation negative exponent", new Arg("-5.1e-2", -0.051d)))
-        );
+                arguments(named("negative decimal scientific notation negative exponent", new Arg("-5.1e-2", -0.051d))));
     }
 }

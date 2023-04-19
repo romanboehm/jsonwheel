@@ -1,9 +1,6 @@
 package com.romanboehm.jsonwheel;
 
-import com.fasterxml.jackson.jr.ob.JSON;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -11,9 +8,26 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import com.fasterxml.jackson.jr.ob.JSON;
 
 class ComparisonTest {
+
+    private static List<String> jsonDotOrgPassJsons() throws URISyntaxException, IOException {
+        try (var stream = Files.list(Paths.get(ComparisonTest.class.getResource("/jsondotorg/pass").toURI()))) {
+            return stream.map(path -> {
+                try {
+                    return Files.readString(path);
+                }
+                catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }).toList();
+        }
+    }
 
     // Examples taken from https://json.org/example.html.
     @ParameterizedTest(name = ParameterizedTest.INDEX_PLACEHOLDER)
@@ -221,18 +235,6 @@ class ComparisonTest {
         var wheel = JsonWheel.read(json).inner;
         var jackson = JSON.std.anyFrom(json);
         assertThat(wheel).isEqualTo(jackson);
-    }
-
-    private static List<String> jsonDotOrgPassJsons() throws URISyntaxException, IOException {
-        try (var stream = Files.list(Paths.get(ComparisonTest.class.getResource("/jsondotorg/pass").toURI()))) {
-            return stream.map(path -> {
-                try {
-                    return Files.readString(path);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }).toList();
-        }
     }
 
     @ParameterizedTest(name = ParameterizedTest.INDEX_PLACEHOLDER)
