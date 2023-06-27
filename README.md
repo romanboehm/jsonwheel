@@ -91,3 +91,6 @@ var bar = node.get("foo").get("bar").elements()
         .toList(); //   1 2 3
 var baz = node.get("foo").get("baz").val(String.class); //  "qux"
 ```
+
+## Release
+Run the [_release_ GitHub workflow](https://github.com/romanboehm/jsonwheel/actions/workflows/release.yaml) with the desired version.
