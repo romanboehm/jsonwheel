@@ -11,7 +11,8 @@ import java.util.function.Consumer;
 
 /**
  * Copyright (c) 2022 Roman Böhm. Subject to the Apache License 2.0.
- * See also https://github.com/romanboehm/jsonwheel.
+ * <br>
+ * See also <a href="https://github.com/romanboehm/jsonwheel">https://github.com/romanboehm/jsonwheel</a>.
  */
 class JsonWheel {
 
